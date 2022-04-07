@@ -1,0 +1,11 @@
+---------------------------------------------------------------------------
+Bem vindo a Five passagens aéreas !
+
+Selecione uma ação para ser executada:
+
+|1 - Listar rotas      |
+|2 - Cadastro          |
+|3 - Login             |
+|0 - Encerrar programa |
+
+---------------------------------------------------------------------------
