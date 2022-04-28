@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import br.com.five.travels.exception.RotaException;
 import br.com.five.travels.exception.UserException;
 
 public class SistemaReservas {
@@ -69,13 +70,6 @@ public class SistemaReservas {
 		this.script = new File("script2.txt");
 		this.usuario = usuario;
 	}
-
-	// auxiliar
-	public void adicionarRota(Rota rota1) {
-		rota1.setId(rotas.size() + 1);
-		rotas.put(rota1.getId(), rota1);
-
-	}
 	
 	private void logout() {
 		if(!cadastrado.contains(usuario)) {
@@ -89,35 +83,47 @@ public class SistemaReservas {
 		
 	}
 
+	// auxiliar
+	public void adicionarRota(Rota rota1) {
+		rota1.setId(rotas.size() + 1);
+		rotas.put(rota1.getId(), rota1);
+
+	}
+	
+	
 	// menu de ações
 	public void iniciar() throws FileNotFoundException {
 
-		Scanner scanner = new Scanner(script);
-		while (scanner.hasNextLine()) {
-			String linha = scanner.nextLine();
-			System.out.println(linha);
-		}
-		scanner.close();
-
-		if (usuario == null) {
-			System.out.println("Aviso: Faça o cadastro e o login para acessar o sistema por completo");
-			System.out.println("---------------------------------------------------------------------------");
-		} else {
-			System.out.println("Usuario Logado: " + usuario.getNome());
-			System.out.println("---------------------------------------------------------------------------");
-		}
+		
 		while (true) {
+			
+			Scanner scanner = new Scanner(script);
+			while (scanner.hasNextLine()) {
+				String linha = scanner.nextLine();
+				System.out.println(linha);
+			}
+			scanner.close();
+
+			if (usuario == null) {
+				System.out.println("Aviso: Faça o cadastro e o login para acessar o sistema por completo");
+				System.out.println("---------------------------------------------------------------------------");
+			} else {
+				System.out.println("Usuario Logado: " + usuario.getNome());
+				System.out.println("---------------------------------------------------------------------------");
+			}
+			
 			Scanner scanner2 = new Scanner(System.in);
 			System.out.println("Escolha sua ação:");
-			Integer entradaSt = scanner2.nextInt();
+			String entradaString = scanner2.next();
 			try {
-				this.acao(entradaSt);
+				Integer entradaInt = Integer.parseInt(entradaString);
+				this.acao(entradaInt);
 			}catch(Exception e) {
 				System.out.println("-----------------------------------------------");
 				System.out.println("| " + e.getMessage() + " |");
-				this.iniciar();
+					
 			}			
-			scanner2.close();
+			
 
 		}
 	}
@@ -128,10 +134,17 @@ public class SistemaReservas {
 		if (entradaSt > 3 && this.usuario == null) {
 			throw new NullPointerException("Ação invalida");
 		}
+		
+		if (entradaSt > 7 || entradaSt < 0){
+			throw new NullPointerException("Ação invalida");
+		}
+		
+		
+		
 		// listar
 		if (entradaSt.equals(1)) {
-			this.listarRotas();
-			this.iniciar();
+			 this.listarRotas();
+			
 		}
 		// cadastrar
 		if (entradaSt.equals(2)) {
@@ -149,8 +162,7 @@ public class SistemaReservas {
 			String cpf = scanner.nextLine();
 			System.out.println("----------------------------------------");
 			this.cadastro(new Usuario(nome, cpf));
-			this.iniciar();
-			scanner.close();
+			
 		}
 		// Login
 		if (entradaSt.equals(3)) {
@@ -167,14 +179,16 @@ public class SistemaReservas {
 			System.out.println("Digite seu CPF:");
 			String cpf = scanner.nextLine();
 			this.login(new Usuario(nome, cpf));
-			this.iniciar();
-			scanner.close();
+			
 
 		}
 		// cancelar reserva
 		if (entradaSt.equals(4)) {
 			if (!cadastrado.contains(usuario)) {
 				throw new UserException("Usuario não está logado");
+			}
+			if (usuario.getReservas().isEmpty()) {
+				throw new RotaException("Nenhuma reserva disponivel para ser cancelada");
 			}
 			System.out.println("----------------------------------------");
 			usuario.mostrarReservas();
@@ -185,11 +199,12 @@ public class SistemaReservas {
 			Integer id = scanner.nextInt();
 
 			Rota rota = usuario.getReservas().get(id);
+			if (rota == null) {
+				throw new RotaException("Informe um id valido");
+			}
 			this.cancelarReserva(this.usuario, rota);
 
-			this.iniciar();
-
-			scanner.close();
+			
 
 		}
 		// Listar reservas
@@ -199,8 +214,7 @@ public class SistemaReservas {
 			}
 			if (usuario.getReservas().isEmpty()) {
 				System.out.println("----------------------------------------");
-				System.out.println("Você não tem nenhum reserva!");
-				this.iniciar();
+				throw new UserException("Você não tem nenhum reserva!");
 			}
 
 			System.out.println("----------------------------------------");
@@ -208,9 +222,9 @@ public class SistemaReservas {
 
 			usuario.mostrarReservas();
 
-			this.iniciar();
+			
 		}
-		// Logar
+		// reservar
 		if (entradaSt.equals(6)) {
 
 			
@@ -231,13 +245,11 @@ public class SistemaReservas {
 			}
 			Rota rota = rotas.get(id);
 			this.reservarRota(this.usuario, rota);
-			this.iniciar();
-			scanner.close();
+			
 		}
 		// logout
 		if (entradaSt.equals(7)) {
 			this.logout();
-			this.iniciar();
 			
 		}
 		// finalizar programa
@@ -246,9 +258,7 @@ public class SistemaReservas {
 			System.exit(0);
 		} 
 
-		else {
-			throw new NullPointerException("Ação invalida");
-		}
+		
 
 	}
 
