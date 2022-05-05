@@ -30,7 +30,7 @@ public class SistemaReservas {
 	}
 
 	// Ações:
-	public void cadastro(Usuario usuario) {
+	public void cadastro(Usuario usuario) throws UserException {
 		if (cadastrado.contains(usuario)) {
 			throw new UserException("usuario já cadastrado");
 		}
@@ -54,7 +54,7 @@ public class SistemaReservas {
 		usuario.mostrarReservas();
 	}
 
-	public void cancelarReserva(Usuario usuario, Rota rota) {
+	public void cancelarReserva(Usuario usuario, Rota rota) throws UserException {
 		if (!cadastrado.contains(usuario)) {
 			throw new UserException("Usuario não está logado");
 		}
@@ -63,24 +63,24 @@ public class SistemaReservas {
 		usuario.mostrarReservas();
 	}
 
-	private void login(Usuario usuario) {
+	private void login(Usuario usuario) throws UserException {
 		if (!cadastrado.contains(usuario)) {
 			throw new UserException("Algo deu errado. Informações incorretas !");
 		}
 		this.script = new File("script2.txt");
 		this.usuario = usuario;
 	}
-	
-	private void logout() {
-		if(!cadastrado.contains(usuario)) {
+
+	private void logout() throws UserException {
+		if (!cadastrado.contains(usuario)) {
 			throw new UserException("Você não está logado");
 		}
 		System.out.println("---------------------------------------------------------");
-		System.out.println("| Logout feito com sucesso, até a proxima " + usuario.getNome()+" |");
+		System.out.println("| Logout feito com sucesso, até a proxima " + usuario.getNome() + " |");
 		System.out.println("---------------------------------------------------------");
 		this.script = new File("script.txt");
 		this.usuario = null;
-		
+
 	}
 
 	// auxiliar
@@ -89,14 +89,13 @@ public class SistemaReservas {
 		rotas.put(rota1.getId(), rota1);
 
 	}
-	
-	
-	// menu de ações
-	public void iniciar() throws FileNotFoundException {
 
-		
+	// menu de ações
+	@SuppressWarnings("resource")
+	public void iniciar() throws FileNotFoundException, UserException {
+
 		while (true) {
-			
+
 			Scanner scanner = new Scanner(script);
 			while (scanner.hasNextLine()) {
 				String linha = scanner.nextLine();
@@ -111,79 +110,84 @@ public class SistemaReservas {
 				System.out.println("Usuario Logado: " + usuario.getNome());
 				System.out.println("---------------------------------------------------------------------------");
 			}
-			
+
 			Scanner scanner2 = new Scanner(System.in);
 			System.out.println("Escolha sua ação:");
-			String entradaString = scanner2.next();
+			String acaoUsuarioString = scanner2.next();
+			Boolean isNumeric = acaoUsuarioString.matches("-?\\d+");
+			if (!isNumeric) {
+				throw new UserException("Ação invalida");
+			}
 			try {
-				Integer entradaInt = Integer.parseInt(entradaString);
-				this.acao(entradaInt);
-			}catch(Exception e) {
+				Integer acaoUsuario = Integer.parseInt(acaoUsuarioString);
+				this.acao(acaoUsuario);
+			} catch (Exception e) {
 				System.out.println("-----------------------------------------------");
 				System.out.println("| " + e.getMessage() + " |");
-					
-			}			
-			
+
+			}
 
 		}
 	}
 
 	// chama ações
-	public void acao(Integer entradaSt) throws FileNotFoundException {
+	public void acao(Integer acaoUsuario) throws Exception {
 		
-		if (entradaSt > 3 && this.usuario == null) {
-			throw new NullPointerException("Ação invalida");
+		
+
+		if (acaoUsuario > 3 && this.usuario == null) {
+			throw new UserException("Ação invalida");
 		}
-		
-		if (entradaSt > 7 || entradaSt < 0){
-			throw new NullPointerException("Ação invalida");
+
+		if (acaoUsuario > 7 || acaoUsuario < 0) {
+			throw new UserException("Ação invalida");
 		}
-		
-		
-		
-		// listar
-		if (entradaSt.equals(1)) {
-			 this.listarRotas();
 			
-		}
-		// cadastrar
-		if (entradaSt.equals(2)) {
-			if(usuario != null) {
-				throw new NullPointerException("Ação invalida");
+
+		switch (acaoUsuario) {
+
+		case 1:
+			this.listarRotas();
+			break;
+
+		case 2:
+			// cadastrar
+			if (usuario != null) {
+				throw new UserException("Ação invalida");
 			}
+
 			System.out.println("----------------------------------------");
 			System.out.println("| Bem vindo ao cadastro |");
-			Scanner scanner = new Scanner(System.in);
+			Scanner scannerCadastro = new Scanner(System.in);
 			System.out.println("----------------------------------------");
 			System.out.println("Digite seu nome:");
-			String nome = scanner.nextLine();
+			String nomeCadastro = scannerCadastro.nextLine();
 			System.out.println("----------------------------------------");
 			System.out.println("Digite seu CPF:");
-			String cpf = scanner.nextLine();
+			String cpfCadastro = scannerCadastro.nextLine();
 			System.out.println("----------------------------------------");
-			this.cadastro(new Usuario(nome, cpf));
-			
-		}
-		// Login
-		if (entradaSt.equals(3)) {
-			if(usuario != null) {
-				throw new NullPointerException("Ação invalida");
+			this.cadastro(new Usuario(nomeCadastro, cpfCadastro));
+			break;
+
+		case 3:
+			// Login
+			if (usuario != null) {
+				throw new UserException("Ação invalida");
 			}
 			System.out.println("----------------------------------------");
 			System.out.println("| Bem vindo ao Login |");
 			System.out.println("----------------------------------------");
-			Scanner scanner = new Scanner(System.in);
+			Scanner scannerLogin = new Scanner(System.in);
 			System.out.println("Digite seu nome:");
-			String nome = scanner.nextLine();
+			String nomeLogin = scannerLogin.nextLine();
 			System.out.println("----------------------------------------");
 			System.out.println("Digite seu CPF:");
-			String cpf = scanner.nextLine();
-			this.login(new Usuario(nome, cpf));
-			
+			String cpfLogin = scannerLogin.nextLine();
+			this.login(new Usuario(nomeLogin, cpfLogin));
+			break;
 
-		}
-		// cancelar reserva
-		if (entradaSt.equals(4)) {
+		case 4:
+			// cancelar reserva
 			if (!cadastrado.contains(usuario)) {
 				throw new UserException("Usuario não está logado");
 			}
@@ -195,20 +199,18 @@ public class SistemaReservas {
 			System.out.println("----------------------------------------");
 
 			System.out.println("Informe o id da rota que deseja cancelar: ");
-			Scanner scanner = new Scanner(System.in);
-			Integer id = scanner.nextInt();
+			Scanner scannerCancelar = new Scanner(System.in);
+			Integer idCancelamento = scannerCancelar.nextInt();
 
-			Rota rota = usuario.getReservas().get(id);
-			if (rota == null) {
+			Rota rotaCancelamento = usuario.getReservas().get(idCancelamento);
+			if (rotaCancelamento == null) {
 				throw new RotaException("Informe um id valido");
 			}
-			this.cancelarReserva(this.usuario, rota);
+			this.cancelarReserva(this.usuario, rotaCancelamento);
+			break;
 
-			
-
-		}
-		// Listar reservas
-		if (entradaSt.equals(5)) {
+		case 5:
+			// Listar reservas
 			if (!cadastrado.contains(usuario)) {
 				throw new UserException("Usuario não está logado");
 			}
@@ -222,12 +224,9 @@ public class SistemaReservas {
 
 			usuario.mostrarReservas();
 
-			
-		}
-		// reservar
-		if (entradaSt.equals(6)) {
+		case 6:
+			// reservar
 
-			
 			if (!cadastrado.contains(usuario)) {
 				throw new UserException("Usuario não está logado");
 			}
@@ -236,32 +235,27 @@ public class SistemaReservas {
 			System.out.println("----------------------------------------");
 
 			System.out.println("Informe o id da rota que deseja reservar: ");
-			Scanner scanner = new Scanner(System.in);
-			Integer id = scanner.nextInt();
+			Scanner scannerReservar = new Scanner(System.in);
+			Integer idReserva = scannerReservar.nextInt();
 
-			if (id > rotas.size() + 1) {
-				scanner.close();
-				throw new NullPointerException("rota invalida");
+			if (idReserva > rotas.size() + 1) {
+				scannerReservar.close();
+				throw new RotaException("rota invalida");
 			}
-			Rota rota = rotas.get(id);
-			this.reservarRota(this.usuario, rota);
-			
-		}
-		// logout
-		if (entradaSt.equals(7)) {
+			Rota rotaReservada = rotas.get(idReserva);
+			this.reservarRota(this.usuario, rotaReservada);
+
+		case 7:
+			// logout
 			this.logout();
-			
-		}
-		// finalizar programa
-		if (entradaSt.equals(0)) {
+
+		case 0:
+			// finalizar programa
 			System.out.println("Fim do programa, obrigado por utilizar nosso sistema !");
 			System.exit(0);
-		} 
 
-		
+		}
 
 	}
-
-	
 
 }

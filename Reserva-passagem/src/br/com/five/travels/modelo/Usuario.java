@@ -11,12 +11,12 @@ public class Usuario {
 	//private Set<Rota> reservas = new HashSet();
 	private Map<Integer, Rota> reservas = new HashMap<>();
 
-	public Usuario(String nome, String cpf) {
+	public Usuario(String nome, String cpf) throws Exception {
 		if (nome.equals(null) | nome.trim().isEmpty()) {
-			throw new NullPointerException("Nome invalido");
+			throw new Exception("Nome invalido");
 		}
 		if (cpf.equals(null) | cpf.trim().isEmpty()) {
-			throw new NullPointerException("cpf invalido");
+			throw new Exception("cpf invalido");
 		}
 		this.nome = nome;
 		this.cpf = cpf;
